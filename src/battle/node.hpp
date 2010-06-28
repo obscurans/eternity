@@ -5,62 +5,14 @@
 #ifndef UNIT_H
 #define UNIT_H
 
-#include "unit.h"
-#include "battlefield.h"
-using std:string;
+#include <string>
+#include <set>
+#include <map>
+using std::string;
+using std::set;
 using std::map;
 
 namespace Eternity {
-/* base class for game units */
-    class Unit {
-    private:
-        int unit_id;
-        string name;
-        Location position;
-        Battlefield& field;
-        bool dirty;
-        const map<int,Unit*>* unit_set_base;
-        const set<int>* dunit_set_base;
-        Node decision_root;
-        map<string,Block> instructions;
-        list<Buff*> buff_list;
-
-        map<int,bool> mem_bool;
-        map<int,int> mem_int;
-        map<int,double> mem_real;
-        map<int,string*> mem_str;
-        map<int,Unit*> mem_unit;
-        map<int,Location> mem_loc;
-    public:
-        bool modifyDecisions();
-        bool modifyInstructions();
-
-        int getID() const;
-        string getName() const;
-        Location getPosition() const;
-        bool getDirty() const;
-        const map<int,Unit*>* getUnitList() const;
-        const set<int>* getDirtyUnitList() const;
-
-        bool setID();
-        bool setName(String);
-
-        bool queryMemBool(int) const;
-        int queryMemInt(int) const;
-        double queryMemReal(int) const;
-        string* queryMemString(int) const;
-        Unit* queryMemUnit(int) const;
-        Location queryMemLocation(int) const;
-
-        bool cacheState();
-        bool cacheStatus();
-
-        bool elapseCallback(map<int,Unit*>::const_iterator, map<int,Unit*>::const_iterator, set<int>::const_iterator, set<int>::const_iterator); /* unit will act by calling Battlefield.scheduleEvent from this */
-
-        bool applyState();
-        bool applyStatus();
-    };
-
 /* base class for unit decision-tree nodes */
     class Node {
     protected:
@@ -89,7 +41,7 @@ namespace Eternity {
         bool setTest(const Predicate*);
 
         bool evaluate(Unit&, Node*, const map<int,Unit*>*, const set<int>*);
-    }
+    };
 
 /* class for unit decision-tree filtering internal nodes */
     class Node_Filter:public Node {
@@ -110,7 +62,7 @@ namespace Eternity {
         bool setTest(const Filter*);
 
         bool evaluate(Unit&, Node*, const map<int,Unit*>*, const set<int>*);
-    }
+    };
 
 /* class for unit decision-tree normal leaves */
     class Node_Terminal:public Node {
@@ -125,7 +77,7 @@ namespace Eternity {
         bool setInterrupt(Block_Timer*);
 
         bool evaluate(Unit&, Node*, const map<int,Unit*>*, const set<int>*);
-    }
+    };
 
 /* class for unit decision-tree sorting leaves */
     class Node_Sorter:public Node {
@@ -145,43 +97,8 @@ namespace Eternity {
         bool setOrdering(Comparer*);
 
         bool evaluate(Unit&, Node*, const map<int,Unit*>*, const set<int>*);
-    }
-
-/* a unit instruction block */
-    class Block {
-    protected:
-/* TODO */
-    public:
     };
-
-/* a special-purpose unit instruction block for computing interrupt wait timers */
-    class Block_Timer:public Block {
-    };
-
-/* a special-purpose unit instruction block for handling action interrupt events */
-    class Block_Interrupt:public Block {
-    };
-
-/* a boolean-logic condition statement, implicitly framed in terms of the caller */
-    class Predicate {
-    protected:
-/* TODO */
-    };
-
-/* a boolean unit-selection filter */
-    class Filter:public Predicate {
-/* TODO */
-    }
-
-/* a boolean unit-comparison function */
-    class Comparer:public Predicate {
-/* TODO */
-    }
-
-/* an effect-list tied to a unit */
-    class Buff {
-    }
 }
 
-#endif /*UNIT_H*/
+#endif /*NODE_H*/
 

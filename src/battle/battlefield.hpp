@@ -5,9 +5,10 @@
 #ifndef BATTLEFIELD_H
 #define BATTLEFIELD_H
 
-#include "battlefield.h"
-#include "order.h"
-#include "unit.h"
+#include <string>
+#include <list>
+#include <map>
+#include <multimap>
 using std::string;
 using std::list;
 using std::map;
@@ -31,7 +32,7 @@ namespace Eternity {
         virtual bool deleteUnit(int) = 0;                           /* de-register a Unit off the map */
 
         virtual Unit* getUnit(int) const = 0;                       /* retrieve a Unit by unit_ID */
-    }
+    };
 
 /* the base class for the entire battlefield */
     class Battlefield:public Battlefield_Interface {
@@ -80,82 +81,6 @@ namespace Eternity {
         Unit* getUnit(int) const;
         const map<int,Unit*>* getUnitList() const;      /* retrieve the full list of map Units */
         const set<int>* getDirtyUnitsStart() const;     /* retrieve the ID list of Units dirtied this tick */
-    };
-
-/* a unit map location wrapper */
-    class Location {
-    private:
-        int x;
-        int y;
-        int height;
-        int map;
-    public:
-        Location(int, int, int, int);
-
-        int getX() const;
-        int getY() const;
-        int getHeight() const;
-        int getMap() const;
-
-        bool stepX(bool);
-        bool stepY(bool);
-
-        bool setX(int);
-        bool setY(int);
-        bool setHeight(int);
-        bool setMap(int);
-
-        int lineDistanceTo(Location) const;
-    }
-
-/* a game-play event */
-    class Event {
-    protected:
-        Unit invoker;
-        map<Filter,list<Effect>> effect_list;
-    public:
-        virtual bool occur();
-        virtual bool isContinuous() const;
-/* TODO */
-    };
-
-/* a continuous game-play event */
-    class Continuous:public Event {
-    private:
-        Condition ending;
-    public:
-        bool occur();
-        bool isContinuous() const;
-    };
-
-/* a game-play effect */
-    class Effect {
-    public:
-        bool affect(Unit*);
-/* TODO */
-    };
-
-/* wrapper for event queue references */
-    class EventRef {
-    private:
-        multimap<int,Event*>::iterator reference;
-    public:
-        EventRef(multimap<int,Event*>::iterator);
-
-        int getTick() const;
-        Event* getEvent() const;
-        multimap<int,Event*>::iterator getIterator() const;
-    };
-
-/* wrapper for continuous event references */
-    class ContRef {
-    private:
-        list<Continuous*>::iterator reference;
-    public:
-        ContRef(list<Continuous*>::iterator);
-
-        Continuous* getEvent() const;
-        list<Continuous*>::iterator getIterator() const;
     };
 }
 
