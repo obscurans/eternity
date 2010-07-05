@@ -2,7 +2,7 @@ General
 -------
 The coding style mostly follows K&R, details given below.
 
-Soft tabs of 4 spaces per level of indentation, no limits on length of lines. In an attempt to reduce the number of lines, skip the newline between a scoping statement and its open-block, "} else if (cond) {" on one line. Block all scoping statments unless really trivial. Blank lines between declarations and code; consider blank lines between segments of code of different purposes. Placing multiple similar and short statements on the same line is allowed but do not abuse readability.
+Soft tabs of 4 spaces per level of indentation, no limits on length of lines. In an attempt to reduce the number of lines, skip the newline between a scoping statement and its open-block, "} else if (cond) {" on one line. Block all scoping statments unless really trivial. Blank lines between declarations and code; consider blank lines or comment lines between segments of code of different purposes. Placing multiple similar and short statements on the same line is allowed but do not abuse readability.
 
 Spaces between binary operators and their arguments except for member access (. -> [] ::), spaces after a comma or semicolon; no spaces for unary operators such as ++, space between scoping operator and its () argument (for, if), no space between function and argument list unless for clarity.
 

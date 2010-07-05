@@ -6,10 +6,8 @@
 #define UNIT_H
 
 #include <string>
-#include <set>
 #include <map>
 using std::string;
-using std::set;
 using std::map;
 
 namespace Eternity {
@@ -20,13 +18,19 @@ namespace Eternity {
         string name;
         Location position;
         Battlefield& field;
-        bool dirty;
-        const map<int,Unit*>* unit_set_base;
-        const set<int>* dunit_set_base;
-        Node decision_root;
-        map<string,Block> instructions;
         list<Buff*> buff_list;
 
+        bool dirty;
+        const map<int,Unit*>* unit_set_base;
+        const map<int,Unit*>* dunit_set_base;
+        Node* cur_node;
+        Node* cur_filter;
+        const map<int,Unit*>* unit_set_cur;
+        const map<int,Unit*>* dunit_set_cur;
+        int timer_carry;
+
+        Node decision_root;
+        map<string,Block> instructions;
         map<int,bool> mem_bool;
         map<int,int> mem_int;
         map<int,double> mem_real;
@@ -42,10 +46,12 @@ namespace Eternity {
         Location getPosition() const;
         bool getDirty() const;
         const map<int,Unit*>* getUnitList() const;
-        const set<int>* getDirtyUnitList() const;
+        const map<int,Unit*>* getDirtyUnitList() const;
 
         bool setID();
         bool setName(String);
+        bool retTimerSurplus(int);
+        bool retCurNode(Node*);
 
         bool queryMemBool(int) const;
         int queryMemInt(int) const;
@@ -57,7 +63,7 @@ namespace Eternity {
         bool cacheState();
         bool cacheStatus();
 
-        bool elapseCallback(map<int,Unit*>::const_iterator, map<int,Unit*>::const_iterator, set<int>::const_iterator, set<int>::const_iterator); /* unit will act by calling Battlefield.scheduleEvent from this */
+        bool elapseCallback(const map<int,Unit*>*, const set<int>*); /* unit will act by calling Battlefield.scheduleEvent from this */
 
         bool applyState();
         bool applyStatus();

@@ -26,7 +26,7 @@ namespace Eternity {
         return unit_set_base;
     }
 
-    const set<int>* Unit::getDirtyUnitList() const {
+    const map<int,Unit*>* Unit::getDirtyUnitList() const {
         return dunit_set_base;
     }
 
@@ -37,6 +37,15 @@ namespace Eternity {
 
     bool Unit::setName(string new_name) {
         name = new_name;
+        return true;
+    }
+
+    bool Unit::retCurNode(Node* last_node, Node* past_filter, const map<int,Unit*>* punit_set, const map<int,Unit*>* pdunit_set, int timer_surplus) {
+        cur_node = last_node;
+        cur_filter = past_filter;
+        unit_set_cur = punit_set;
+        dunit_set_cur = pdunit_set;
+        timer_carry = timer_surplus;
         return true;
     }
 }

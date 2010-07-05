@@ -6,10 +6,8 @@
 #define UNIT_H
 
 #include <string>
-#include <set>
 #include <map>
 using std::string;
-using std::set;
 using std::map;
 
 namespace Eternity {
@@ -20,7 +18,7 @@ namespace Eternity {
         bool modified;                      /* whether this node has been modified this tick */
         Node* last_filter;                  /* the last filtering node passed through this path */
     public:
-        virtual bool evaluate(Unit&, Node*, const map<int,Unit*>*, const set<int>*) = 0;
+        virtual Node* evaluate(Unit&, Node*, const map<int,Unit*>*, const map<int,Unit*>*, int) = 0;
     };
 
 /* class for unit decision-tree normal internal nodes */
@@ -30,7 +28,7 @@ namespace Eternity {
         Node* t_branch;                     /* the node to test next on condition false */
         Predicate* test;                    /* the boolean logic statement to test */
         const map<int,Unit*>* unit_set_b;   /* the set of units filtered through to this node */
-        const set<int>* dunit_set_b;        /* the set of dirty units filtered through to this node */
+        const map<int,Unit*>* dunit_set_b;  /* the set of dirty units filtered through to this node */
     public:
         Node* getFBranch() const;
         Node* getTBranch() const;
@@ -40,7 +38,7 @@ namespace Eternity {
         bool setTBranch(const Node*);
         bool setTest(const Predicate*);
 
-        bool evaluate(Unit&, Node*, const map<int,Unit*>*, const set<int>*);
+        bool evaluate(Unit&, Node*, const map<int,Unit*>*, const map<int,Unit*>*, int);
     };
 
 /* class for unit decision-tree filtering internal nodes */
@@ -50,7 +48,7 @@ namespace Eternity {
         Node* t_branch;                     /* the node to test next on unit-set empty */
         Filter* test;                       /* the boolean logic filter to use */
         map<int,Unit*> unit_set;            /* the set of units filtered past this node */
-        set<int> dunit_set;                 /* the set of dirty units filtered past this node */
+        map<int,Unit*> dunit_set;           /* the set of dirty units filtered past this node */
 //        bool dirty;                         /* whether the variables named in the filter have changed */
     public:
         Node* getFBranch() const;
@@ -61,7 +59,7 @@ namespace Eternity {
         bool setTBranch(const Node*);
         bool setTest(const Filter*);
 
-        bool evaluate(Unit&, Node*, const map<int,Unit*>*, const set<int>*);
+        bool evaluate(Unit&, Node*, const map<int,Unit*>*, const map<int,Unit*>*, int);
     };
 
 /* class for unit decision-tree normal leaves */
@@ -76,7 +74,7 @@ namespace Eternity {
         bool setInstruction(Block*);
         bool setInterrupt(Block_Timer*);
 
-        bool evaluate(Unit&, Node*, const map<int,Unit*>*, const set<int>*);
+        bool evaluate(Unit&, Node*, const map<int,Unit*>*, const map<int,Unit*>*, int);
     };
 
 /* class for unit decision-tree sorting leaves */
@@ -86,6 +84,8 @@ namespace Eternity {
         Block_Timer* interrupt;             /* the function to calculate interrupt waiting time */
         Comparer* ordering;                 /* the ordering function to pick a unit to target */
         const map<int,Unit*>* unit_set_b;   /* the set of units filtered through to pick from */
+        int max_unit_id;                    /* the cached maximal unit ID from filtered units */
+        Unit* max_unit;                     /* the cached maximal unit from filtered units */
 //        bool dirty;                         /* whether the variables named in the ordering have changed */
     public:
         Block* getInstruction() const;
@@ -96,7 +96,7 @@ namespace Eternity {
         bool setInterrupt(Block_Timer*);
         bool setOrdering(Comparer*);
 
-        bool evaluate(Unit&, Node*, const map<int,Unit*>*, const set<int>*);
+        bool evaluate(Unit&, Node*, const map<int,Unit*>*, const map<int,Unit*>*, int);
     };
 }
 
