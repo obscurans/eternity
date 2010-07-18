@@ -100,18 +100,11 @@ namespace Eternity {
         map<int,Unit*>::iterator unit_cur, unit_max, dunit_cur, dunit_tmp, dunit_max;
         map<int,Unit*>::const_iterator punit_cur, punit_max;
         dunit_set.clear();
-        dunit_cur = dunit_set.begin();
         if (test->checkDirty() || (passing_filter != last_filter) || modified) {
             /* cache unusable, compute the filter-set from scratch */
             last_filter = passing_filter;
             modified = false;
-/* TODO: replace with map::swap(dunit_set,unit_set) */            
-            /* initialize dunit_set to unit_set, then clear unit_set */
-            for (unit_cur = unit_set.begin(), unit_max = unit_set.end(); unit_cur != unit_max; unit_cur++) {
-                dunit_cur = dunit_set.insert(dunit_cur, *unit_cur);
-            }
-            unit_set.clear();
-/**/
+            unit_set.swap(dunit_set);
             /* evaluate every unit in punit_set for inclusion into unit_set */
             unit_cur = unit_set.begin();
             for (punit_cur = punit_set->begin(), punit_max = punit_set->end(); punit_cur != punit_max; punit_cur++) {
@@ -155,6 +148,7 @@ namespace Eternity {
             /* cache valid, re-check all units marked dirty
              * a unit past this filter is dirty if it was marked dirty, and !(was out, now out) */
             unit_cur = unit_set.begin(); unit_max = unit_set.end();
+            dunit_cur = dunit_set.begin();
             for (punit_cur = pdunit_set->begin(), punit_max = pdunit_set->end(); punit_cur != punit_max; punit_cur++) {
                 t_id = punit_cur->first;
                 if (test->evaluate(punit_cur->second)) {

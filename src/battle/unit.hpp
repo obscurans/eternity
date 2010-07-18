@@ -27,6 +27,7 @@ namespace Eternity {
         Node* cur_filter;
         const map<int,Unit*>* unit_set_cur;
         const map<int,Unit*>* dunit_set_cur;
+        bool exec_decision;
         int timer_carry;
 
         Node decision_root;
@@ -63,7 +64,7 @@ namespace Eternity {
         bool cacheState();
         bool cacheStatus();
 
-        bool elapseCallback(const map<int,Unit*>*, const set<int>*); /* unit will act by calling Battlefield.scheduleEvent from this */
+        bool elapseCallback(const map<int,Unit*>*, const map<int,Unit*>*); /* unit will act by calling Battlefield.scheduleEvent from this */
 
         bool applyState();
         bool applyStatus();
