@@ -1,5 +1,5 @@
-/* Copyright (c) 2010 Andrew Crowell and Jeffrey Tsang, all rights reserved.    *
- * See /doc/license.txt for details on how this source can be licensed for use. */
+/* Copyright (c) 2010-2011 Andrew Crowell and Jeffrey Tsang, all rights reserved. *
+ * See /doc/license.txt for details on how this source can be licensed for use.   */
 
 #pragma once
 #ifndef UNIT_H
@@ -46,18 +46,18 @@ namespace Eternity {
     private:
         Node* f_branch;                     /* the node to test next on unit-set nonempty */
         Node* t_branch;                     /* the node to test next on unit-set empty */
-        Filter* test;                       /* the boolean logic filter to use */
+        Predicate_Filter* test;             /* the boolean logic filter to use */
         map<int,Unit*> unit_set;            /* the set of units filtered past this node */
         map<int,Unit*> dunit_set;           /* the set of dirty units filtered past this node */
 //        bool dirty;                         /* whether the variables named in the filter have changed */
     public:
         Node* getFBranch() const;
         Node* getTBranch() const;
-        Filter* getTest() const;
+        Predicate_Filter* getTest() const;
 
         bool setFBranch(const Node*);
         bool setTBranch(const Node*);
-        bool setTest(const Filter*);
+        bool setTest(const Predicate_Filter*);
 
         bool evaluate(Unit&, Node*, const map<int,Unit*>*, const map<int,Unit*>*, int);
     };
@@ -82,19 +82,20 @@ namespace Eternity {
     private:
         Block* instruction;                 /* the instruction to execute from this node */
         Block_Timer* interrupt;             /* the function to calculate interrupt waiting time */
-        Comparer* ordering;                 /* the ordering function to pick a unit to target */
+        Block_Comparer* ranking;            /* the ranking function to pick a unit to target */
         const map<int,Unit*>* unit_set_b;   /* the set of units filtered through to pick from */
         int max_unit_id;                    /* the cached maximal unit ID from filtered units */
         Unit* max_unit;                     /* the cached maximal unit from filtered units */
+        double max_unit_rank;               /* the cached functional rank for the maximal unit */
 //        bool dirty;                         /* whether the variables named in the ordering have changed */
     public:
         Block* getInstruction() const;
         Block_Timer* getInterrupt() const;
-        Comparer* getOrdering() const;
+        Block_Comparer* getRanking() const;
 
         bool setInstruction(Block*);
         bool setInterrupt(Block_Timer*);
-        bool setOrdering(Comparer*);
+        bool setRanking(Block_Comparer*);
 
         bool evaluate(Unit&, Node*, const map<int,Unit*>*, const map<int,Unit*>*, int);
     };

@@ -1,4 +1,4 @@
-All files, including but not limited to source code and planning documents, are Copyright (c) 2010 Andrew Crowell and Jeffrey Tsang, all rights reserved.
+All files, including but not limited to source code and planning documents, are Copyright (c) 2010-2011 Andrew Crowell and Jeffrey Tsang, all rights reserved.
 
 You may view these files but may not distribute them nor make any derivative works from them unless explicit permission is obtained from the authors.
 

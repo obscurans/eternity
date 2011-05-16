@@ -2,7 +2,7 @@
  * See /doc/license.txt for details on how this source can be licensed for use.   */
 
 #include "eternity.hpp"
-#include "predicate.hpp"
+#include "statement.hpp"
 
 namespace Eternity {
 }

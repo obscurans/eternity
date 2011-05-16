@@ -1,5 +1,5 @@
-/* Copyright (c) 2010 Andrew Crowell and Jeffrey Tsang, all rights reserved.    *
- * See /doc/license.txt for details on how this source can be licensed for use. */
+/* Copyright (c) 2010-2011 Andrew Crowell and Jeffrey Tsang, all rights reserved. *
+ * See /doc/license.txt for details on how this source can be licensed for use.   */
 
 #include "eternity.hpp"
 #include "unit.hpp"
@@ -49,16 +49,45 @@ namespace Eternity {
         return true;
     }
 
+    /* these memory accesses are unchecked since the GUI/loading routines will prevent programming in an invalid index */
+    bool queryMemBool(int index) const {
+        return mem_bool[index];
+    }
+
+    int queryMemInt(int index) const {
+        return mem_int[index];
+    }
+
+    double queryMemReal(int index) const {
+        return mem_real[index];
+    }
+
+    string* queryMemString(int index) const {
+        return mem_str[index];
+    }
+
+    Unit* queryMemUnit(int index) const {
+        return mem_unit[index];
+    }
+
+    Location* queryMemLocation(int index) const {
+        return mem_loc[index];
+    }
+
     bool elapseCallback(const map<int,Unit*>* unit_base, const map<int,Unit*>* dunit_base) {
         unit_set_base = unit_base;
         if (exec_decision) {
             /* last tick did not clear decision tree, combine past/current dirty unit lists */
             dunit_set_base.insert(dunit_base->begin(), dunit_base->end());
-            exec_decision = cur_node->evaluate(this, cur_filter, unit_set_cur, dunit_set_cur, /*TODO timer base */0 + timer_carry);
+            if ((timer_carry += /*TODO timer base */0) >= 0) {
+                exec_decision = cur_node->evaluate(this, cur_filter, unit_set_cur, dunit_set_cur, timer_carry);
+            }
         } else {
             /* new tick will restart from decision tree root, only current dirty units needed */
             dunit_set_base = dunit_base;
-            exec_decision = decision_root.evaluate(this, NULL, unit_set_base, dunit_set_base, /*TODO timer base */0 + timer_carry);
+            if ((timer_carry += /*TODO timer base */0) >= 0) {
+                exec_decision = decision_root.evaluate(this, NULL, unit_set_base, dunit_set_base, timer_carry);
+            }
         }
     }
 }

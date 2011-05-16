@@ -1,5 +1,5 @@
-/* Copyright (c) 2010 Andrew Crowell and Jeffrey Tsang, all rights reserved.    *
- * See /doc/license.txt for details on how this source can be licensed for use. */
+/* Copyright (c) 2010-2011 Andrew Crowell and Jeffrey Tsang, all rights reserved. *
+ * See /doc/license.txt for details on how this source can be licensed for use.   */
 
 #pragma once
 #ifndef PREDICATE_H
@@ -13,12 +13,7 @@ namespace Eternity {
     };
 
 /* a boolean unit-selection filter */
-    class Filter:public Predicate {
-/* TODO */
-    };
-
-/* a boolean unit-comparison function */
-    class Comparer:public Predicate {
+    class Predicate_Filter:public Predicate {
 /* TODO */
     };
 }

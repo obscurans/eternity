@@ -1,5 +1,5 @@
-/* Copyright (c) 2010 Andrew Crowell and Jeffrey Tsang, all rights reserved.    *
- * See /doc/license.txt for details on how this source can be licensed for use. */
+/* Copyright (c) 2010-2011 Andrew Crowell and Jeffrey Tsang, all rights reserved. *
+ * See /doc/license.txt for details on how this source can be licensed for use.   */
 
 #include "eternity.hpp"
 #include "node.hpp"
@@ -73,7 +73,7 @@ namespace Eternity {
         return t_branch;
     }
 
-    Filter* Node_Filter::getTest() const {
+    Predicate_Filter* Node_Filter::getTest() const {
         return test;
     }
 
@@ -89,7 +89,7 @@ namespace Eternity {
         return true;
     }
 
-    bool Node_Filter::setTest(const Filter* new_test) {
+    bool Node_Filter::setTest(const Predicate_Filter* new_test) {
         test = new_test;
         modified = true;
         return true;
@@ -216,8 +216,8 @@ namespace Eternity {
     }
 
     bool Node_Terminal::evaluate(Unit& caller, Node* passing_filter, const map<int,Unit*>* punit_set, const map<int,Unit*>* pdunit_set, int timer) {
-        /* calling unit will invoke timer block if necessary, by itself */
         caller.retCurNode(this, NULL, NULL, NULL, timer);
+        /* TODO: set target unit and invoke interrupt timer block if necessary */
         return true;
     }
 
@@ -230,8 +230,8 @@ namespace Eternity {
         return interrupt;
     }
 
-    Comparer* Node_Sorter::getOrdering() const {
-        return ordering;
+    Block_Comparer* Node_Sorter::getRanking() const {
+        return ranking;
     }
 
     bool Node_Sorter::setInstruction(Block* new_block) {
@@ -246,44 +246,43 @@ namespace Eternity {
         return true;
     }
 
-    bool Node_Sorter::setOrdering(Comparer* new_ordering) {
-        ordering = new_ordering;
+    bool Node_Sorter::setRanking(Block_Comparer* new_ranking) {
+        ranking = new_ranking;
         modified = true;
         return true;
     }
 
     bool Node_Sorter::evaluate(Unit& caller, Node* passing_filter, const map<int,Unit*>* punit_set, const map<int,Unit*>* pdunit_set, int timer) {
-        int tmp_unit_id;
         Unit* tmp_unit;
+        double tmp_unit_rank;
         map<int,Unit*>::const_iterator punit_cur, punit_max;
-        set<int>::const_iterator dunit_cur, dunit_max;
-        punit_max = punit_set->end();
-        dunit_max = pdunit_set->end();
-        if (test->checkDirty() || (passing_filter != last_filter) || (punit_set->find(max_unit_id) == punit_max) || (pdunit_set->find(max_unit_id) != dunit_max) || modified) {
+        if (test->checkDirty() || (passing_filter != last_filter) || (punit_set->find(max_unit_id) == punit_set->end()) || (pdunit_set->find(max_unit_id) != pdunit_set->end()) || modified) {
             /* cache unusable, find the maximal unit from scratch */
             last_filter = passing_filter;
             modified = false;
             punit_cur = punit_set->begin();
             max_unit = punit_cur->second;
-            for (punit_cur++; punit_cur ! punit_max; punit_cur++) {
-                if (ordering->evaluate(max_unit, tmp_unit = punit_cur->second)) {
+            for (punit_cur++, punit_max = punit_set->end(); punit_cur != punit_max; punit_cur++) {
+                if ((tmp_unit_rank = ranking->invoke(tmp_unit = punit_cur->second)) > max_unit_rank) {
                     max_unit_id = punit_cur->first;
                     max_unit = tmp_unit;
+                    max_unit_rank = tmp_unit_rank;
                 }
-                timer -= ordering->cost();
+                timer -= ranking->cost(); /*XXX*/
             }
         } else {
             /* cache usable, just check all dirty units against the cached max */
-            for (dunit_cur = pdunit_set->begin(); dunit_cur != dunit_max; dunit_cur++) {
-                if (ordering->evaluate(max_unit, tmp_unit = punit_set->find(tmp_unit_id = *dunit_cur)) {
-                    max_unit_id = tmp_unit_id;
+            for (punit_cur = pdunit_set->begin(), punit_max = pdunit_set->end(); punit_cur != punit_max; punit_cur++) {
+                if ((tmp_unit_rank = ranking->invoke(tmp_unit = punit_cur->second)) > max_unit_rank) {
+                    max_unit_id = punit_cur->first;
                     max_unit = tmp_unit;
+                    max_unit_rank = tmp_unit_rank;
                 }
-                timer -= ordering->cost();
+                timer -= ranking->cost(); /*XXX*/
             }
         }
-        /* calling unit will invoke timer block and set target unit if necessary, by itself */
         caller.retCurNode(this, NULL, NULL, NULL, timer);
+        /* TODO: set target unit and invoke interrupt timer block if necessary */
         return true;
     }
 }

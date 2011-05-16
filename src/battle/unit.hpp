@@ -1,13 +1,15 @@
-/* Copyright (c) 2010 Andrew Crowell and Jeffrey Tsang, all rights reserved.    *
- * See /doc/license.txt for details on how this source can be licensed for use. */
+/* Copyright (c) 2010-2011 Andrew Crowell and Jeffrey Tsang, all rights reserved. *
+ * See /doc/license.txt for details on how this source can be licensed for use.   */
 
 #pragma once
 #ifndef UNIT_H
 #define UNIT_H
 
 #include <string>
+#include <vector>
 #include <map>
 using std::string;
+using std::vector;
 using std::map;
 
 namespace Eternity {
@@ -32,12 +34,12 @@ namespace Eternity {
 
         Node decision_root;
         map<string,Block> instructions;
-        map<int,bool> mem_bool;
-        map<int,int> mem_int;
-        map<int,double> mem_real;
-        map<int,string*> mem_str;
-        map<int,Unit*> mem_unit;
-        map<int,Location> mem_loc;
+        vector<bool> mem_bool;
+        vector<int> mem_int;
+        vector<double> mem_real;
+        vector<string*> mem_str;
+        vector<Unit*> mem_unit;
+        vector<Location> mem_loc;
     public:
         bool modifyDecisions();
         bool modifyInstructions();
