@@ -2,8 +2,8 @@
  * See /doc/license.txt for details on how this source can be licensed for use.   */
 
 #pragma once
-#ifndef UNIT_H
-#define UNIT_H
+#ifndef NODE_H
+#define NODE_H
 
 #include <string>
 #include <map>
