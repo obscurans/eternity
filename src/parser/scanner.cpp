@@ -5,29 +5,29 @@
 #include "scanner.hpp"
 
 namespace Eternity {
-/*TODO: replace Xfunctions() and fix interface
- * Xoldchar, XEOF, Xconvertchar, Xstate, Xappend, Xdiscard, Xunget, Xclear, Xnewline
- */
-    Token Scanner::next() {
-        int c2 = Xoldchar;
-        char c;
-        if (c2 == XEOF) {
-            return Token.EOF;
-        }
-        c = Xconvertchar(c2);
-        Xclear();
-        do {
-            switch (Xstate) {
+/* Scanner class methods */
+    inline Token::Type Scanner::tokenReturn(Token::Type retval, int& eline, int& ecol) {
+        eline = line;
+        ecol = col;
+        return retval;
+    }
+
+    Token::Type Scanner::getToken(int& sline, int& scol, int& eline, int& ecol) {
+        sline = line;
+        scol = col;
+        clearBuffer();
+        while (!input_eof) {
+            switch (state) {
             case START:
                 switch (c) {
                 case '0':
-                    Xappend(c);
-                    Xstate = LEADING_ZERO;
+                    advanceAppend();
+                    state = LEADING_ZERO;
                     break;
                 case '1': case '2': case '3': case '4': case '5': case '6':
                 case '7': case '8': case '9':
-                    Xappend(c);
-                    Xstate = DECIMAL_NUMBER;
+                    advanceAppend();
+                    state = DECIMAL_NUMBER;
                     break;
                 case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
                 case 'G': case 'H': case 'I': case 'J': case 'K': case 'L':
@@ -38,472 +38,592 @@ namespace Eternity {
                 case 'k': case 'l': case 'm': case 'n': case 'o': case 'p':
                 case 'q': case 'r': case 's': case 't': case 'u': case 'v':
                 case 'w': case 'x': case 'y': case 'z': case '_':
-                    Xappend(c);
-                    Xstate = IDENTIFIER;
+                    advanceAppend();
+                    state = IDENTIFIER;
                     break;
                 case ';':
-                    Xappend(c);
-                    return Token.SEMICOLON;
+                    advanceAppend();
+                    return tokenReturn(Token::SEMICOLON, eline, ecol);
                 case '{':
-                    Xappend(c);
-                    return Token.LEFT_BRACE;
+                    advanceAppend();
+                    return tokenReturn(Token::LEFT_BRACE, eline, ecol);
                 case '}':
-                    Xappend(c);
-                    return Token.RIGHT_BRACE;
+                    advanceAppend();
+                    return tokenReturn(Token::RIGHT_BRACE, eline, ecol);
                 case '(':
-                    Xappend(c);
-                    return Token.LEFT_PARENTHESIS;
+                    advanceAppend();
+                    return tokenReturn(Token::LEFT_PARENTHESIS, eline, ecol);
                 case ')':
-                    Xappend(c);
-                    return Token.RIGHT_PARENTHESIS;
+                    advanceAppend();
+                    return tokenReturn(Token::RIGHT_PARENTHESIS, eline, ecol);
                 case '[':
-                    Xappend(c);
-                    return Token.LEFT_BRACKET;
+                    advanceAppend();
+                    return tokenReturn(Token::LEFT_BRACKET, eline, ecol);
                 case ']':
-                    Xappend(c);
-                    return Token.RIGHT_BRACKET;
+                    advanceAppend();
+                    return tokenReturn(Token::RIGHT_BRACKET, eline, ecol);
                 case '~':
-                    Xappend(c);
-                    return Token.BITWISE_NOT;
+                    advanceAppend();
+                    return tokenReturn(Token::BITWISE_NOT, eline, ecol);
                 case '?':
-                    Xappend(c);
-                    return Token.TERNARY;
+                    advanceAppend();
+                    return tokenReturn(Token::TERNARY, eline, ecol);
+                case '\'':
+                    advanceAppend();
+                    state = CHARACTER;
                 case '"':
-                    Xappend(c);
-                    Xstate = STRING;
+                    advanceAppend();
+                    state = STRING;
                     break;
                 case ':':
-                    Xappend(c);
-                    Xstate = COLON;
+                    advanceAppend();
+                    state = COLON;
                     break;
                 case '.':
-                    Xappend(c);
-                    Xstate = PERIOD;
+                    advanceAppend();
+                    state = PERIOD;
                     break;
                 case '+':
-                    Xappend(c);
-                    Xstate = PLUS;
+                    advanceAppend();
+                    state = PLUS;
                     break;
                 case '-':
-                    Xappend(c);
-                    Xstate = MINUS;
+                    advanceAppend();
+                    state = MINUS;
                     break;
                 case '*':
-                    Xappend(c);
-                    Xstate = ASTERISK;
+                    advanceAppend();
+                    state = ASTERISK;
                     break;
                 case '%':
-                    Xappend(c);
-                    Xstate = PERCENT;
+                    advanceAppend();
+                    state = PERCENT;
                     break;
                 case '&':
-                    Xappend(c);
-                    Xstate = AMPERSAND;
+                    advanceAppend();
+                    state = AMPERSAND;
                     break;
                 case '|':
-                    Xappend(c);
-                    Xstate = PIPE;
+                    advanceAppend();
+                    state = PIPE;
                     break;
                 case '^':
-                    Xappend(c);
-                    Xstate = CARET;
+                    advanceAppend();
+                    state = CARET;
                     break;
                 case '<':
-                    Xappend(c);
-                    Xstate = LT;
+                    advanceAppend();
+                    state = LT;
                     break;
                 case '>':
-                    Xappend(c);
-                    Xstate = GT;
+                    advanceAppend();
+                    state = GT;
                     break;
                 case '!':
-                    Xappend(c);
-                    Xstate = EXCLAMATION;
+                    advanceAppend();
+                    state = EXCLAMATION;
                     break;
                 case '=':
-                    Xappend(c);
-                    Xstate = EQUALS;
+                    advanceAppend();
+                    state = EQUALS;
                     break;
                 case '/':
-                    Xappend(c);
-                    Xstate = SLASH;
+                    advanceAppend();
+                    state = SLASH;
                     break;
                 case '\n':
-                    Xdiscard(c);
+                    advanceDiscard();
                     Xnewline();
                     break;
-                default: Xdiscard(c);
+                default: advanceDiscard();
                 }
                 break;
             case IDENTIFIER:
                 if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c == '_')) {
-                    Xappend(c);
+                    advanceAppend();
                 } else {
-                    Xunget(c);
-                    Xstate = START;
-                    return Token.IDENTIFIER;
+                    state = START;
+                    return tokenReturn(Token::IDENTIFIER, eline, ecol);
                 }
                 break;
             case LEADING_ZERO:
                 switch (c) {
                 case '0': case '1': case '2': case '3': case '4': case '5':
                 case '6': case '7': case '8': case '9': case '_':
-                    Xappend(c);
-                    Xstate = DECIMAL_NUMBER;
+                    advanceAppend();
+                    state = DECIMAL_NUMBER;
                     break;
                 case 'E': case 'e':
-                    Xappend(c);
-                    Xstate = FLOATING_EXPONENT;
+                    advanceAppend();
+                    state = FLOATING_EXPONENT;
                     break;
                 case 'b':
-                    Xappend(c);
-                    Xstate = BINARY_NUMBER;
+                    advanceAppend();
+                    state = BINARY_NUMBER;
                     break;
                 case 'o':
-                    Xappend(c);
-                    Xstate = OCTAL_NUMBER;
+                    advanceAppend();
+                    state = OCTAL_NUMBER;
                     break;
                 case 'x':
-                    Xappend(c);
-                    Xstate = HEX_NUMBER;
+                    advanceAppend();
+                    state = HEX_NUMBER;
                     break;
                 case '.':
-                    Xappend(c);
-                    Xstate = FLOATING_POINT;
+                    advanceAppend();
+                    state = FLOATING_POINT;
                     break;
                 default:
-                    Xunget(c);
-                    Xstate = START;
-                    return Token.DECIMAL_NUMBER;
+                    state = START;
+                    return tokenReturn(Token::DECIMAL_NUMBER, eline, ecol);
                 }
                 break;
             case DECIMAL_NUMBER:
                 switch(c) {
                 case '0': case '1': case '2': case '3': case '4': case '5':
                 case '6': case '7': case '8': case '9': case '_':
-                    Xappend(c);
+                    advanceAppend();
                     break;
+                case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
+                case 'G': case 'H': case 'I': case 'J': case 'K': case 'L':
+                case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R':
+                case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
+                case 'Y': case 'Z': case 'a': case 'b': case 'c': case 'd':
+                case 'e': case 'f': case 'g': case 'h': case 'i': case 'j':
+                case 'k': case 'l': case 'm': case 'n': case 'o': case 'p':
+                case 'q': case 'r': case 's': case 't': case 'u': case 'v':
+                case 'w': case 'x': case 'y': case 'z':
+                    state = START;
+                    return tokenReturn(Token::E_DECIMAL_CONCAT_ALPHA, eline, ecol);
                 case '.':
-                    Xappend(c);
-                    Xstate = FLOATING_POINT;
+                    advanceAppend();
+                    state = FLOATING_POINT;
                     break;
                 default:
-                    Xunget(c);
-                    Xstate = START;
-                    return Token.DECIMAL;
+                    state = START;
+                    return tokenReturn(Token::DECIMAL, eline, ecol);
                 }
                 break;
             case BINARY_NUMBER:
-                if ((c >= '0' && c <= '1') || (c == '_')) {
-                    Xappend(c);
-                } else {
-                    Xunget(c);
-                    Xstate = START;
-                    return Token.BINARY;
+                switch (c) {
+                case '0': case '1': case '_':
+                    advanceAppend();
+                    break;
+                case '2': case '3': case '4': case '5': case '6': case '7':
+                case '8': case '9':
+                    state = START;
+                    return tokenReturn(Token::E_BINARY_INVALID_DIGIT, eline, ecol);
+                case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
+                case 'G': case 'H': case 'I': case 'J': case 'K': case 'L':
+                case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R':
+                case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
+                case 'Y': case 'Z': case 'a': case 'b': case 'c': case 'd':
+                case 'e': case 'f': case 'g': case 'h': case 'i': case 'j':
+                case 'k': case 'l': case 'm': case 'n': case 'o': case 'p':
+                case 'q': case 'r': case 's': case 't': case 'u': case 'v':
+                case 'w': case 'x': case 'y': case 'z':
+                    state = START;
+                    return tokenReturn(Token::E_BINARY_CONCAT_ALPHA, eline, ecol);
+                default:
+                    state = START;
+                    return tokenReturn(Token::BINARY, eline, ecol);
                 }
                 break;
             case OCTAL_NUMBER:
-                if ((c >= '0' && c <= '7') || (c == '_')) {
-                    Xappend(c);
-                } else {
-                    Xunget(c);
-                    Xstate = START;
-                    return Token.OCTAL;
+                switch (c) {
+                case '0': case '1': case '2': case '3': case '4': case '5':
+                case '6': case '7': case '_':
+                    advanceAppend();
+                    break;
+                case '8': case '9':
+                    state = START;
+                    return tokenReturn(Token::E_OCTAL_INVALID_DIGIT, eline, ecol);
+                case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
+                case 'G': case 'H': case 'I': case 'J': case 'K': case 'L':
+                case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R':
+                case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
+                case 'Y': case 'Z': case 'a': case 'b': case 'c': case 'd':
+                case 'e': case 'f': case 'g': case 'h': case 'i': case 'j':
+                case 'k': case 'l': case 'm': case 'n': case 'o': case 'p':
+                case 'q': case 'r': case 's': case 't': case 'u': case 'v':
+                case 'w': case 'x': case 'y': case 'z':
+                    state = START;
+                    return tokenReturn(Token::E_OCTAL_CONCAT_ALPHA, eline, ecol);
+                default:
+                    state = START;
+                    return tokenReturn(Token::OCTAL, eline, ecol);
                 }
                 break;
             case HEX_NUMBER:
-                if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f') || (c == '_')) {
-                    Xappend(c);
-                } else {
-                    Xunget(c);
-                    Xstate = START;
-                    return Token.HEXADECIMAL;
+                switch (c) {
+                case '0': case '1': case '2': case '3': case '4': case '5':
+                case '6': case '7': case '8': case '9': case '_': case 'A':
+                case 'B': case 'C': case 'D': case 'E': case 'F': case 'a':
+                case 'b': case 'c': case 'd': case 'e': case 'f':
+                    advanceAppend();
+                    break;
+                case 'G': case 'H': case 'I': case 'J': case 'K': case 'L':
+                case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R':
+                case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
+                case 'Y': case 'Z': case 'e': case 'f': case 'g': case 'h':
+                case 'i': case 'j': case 'k': case 'l': case 'm': case 'n':
+                case 'o': case 'p': case 'q': case 'r': case 's': case 't':
+                case 'u': case 'v': case 'w': case 'x': case 'y': case 'z':
+                    state = START;
+                    return tokenReturn(Token::E_HEXADECIMAL_CONCAT_ALPHA, eline, ecol);
+                default:
+                    state = START;
+                    return tokenReturn(Token::HEXADECIMAL, eline, ecol);
                 }
                 break;
             case FLOATING_POINT:
                 switch (c) {
                 case '0': case '1': case '2': case '3': case '4': case '5':
                 case '6': case '7': case '8': case '9': case '_':
-                    Xappend(c);
+                    advanceAppend();
                     break;
                 case 'E': case 'e':
-                    Xappend(c);
-                    Xstate = FLOATING_EXPONENT;
+                    advanceAppend();
+                    state = FLOATING_EXPONENT;
                     break;
                 default:
-                    Xunget(c);
-                    Xstate = START;
-                    return Token.FLOATING_POINT;
+                    state = START;
+                    return tokenReturn(Token::FLOATING_POINT, eline, ecol);
                 }
                 break;
             case FLOATING_EXPONENT:
                 if ((c >= '0' && c <= '9') || (c == '_') || (c == '+') || (c == '-')) {
-                    Xappend(c);
-                    Xstate = FLOATING_EXPONENT_SIGN;
+                    advanceAppend();
+                    state = FLOATING_EXPONENT_SIGN;
                 } else {
-                    Xunget(c);
-                    Xstate = START;
-                    return Token.FLOATING_POINT;
+                    state = START;
+                    return tokenReturn(Token::E_FLOATING_MISSING_EXPONENT, eline, ecol);
                 }
                 break;
             case FLOATING_EXPONENT_SIGN:
                 if ((c >= '0' && c <= '9') || (c == '_')) {
-                    Xappend(c);
+                    advanceAppend();
                 } else {
-                    Xunget(c);
-                    Xstate = START;
-                    return Token.FLOATING_POINT;
+                    state = START;
+                    return tokenReturn(Token::FLOATING_POINT, eline, ecol);
                 }
                 break;
             case COLON:
                 if (c == ':') {
-                    Xappend(c);
-                    Xstate = START;
-                    return Token.SCOPE;
+                    advanceAppend();
+                    state = START;
+                    return tokenReturn(Token::SCOPE, eline, ecol);
                 } else {
-                    Xunget(c);
-                    Xstate = START;
-                    return Token.COLON;
+                    state = START;
+                    return tokenReturn(Token::COLON, eline, ecol);
                 }
             case PERIOD:
                 if (c >= '0' && c <= '9') {
-                    Xappend(c);
-                    Xstate = FLOATING_POINT;
+                    advanceAppend();
+                    state = FLOATING_POINT;
                 } else {
-                    Xunget(c);
-                    Xstate = START;
-                    return Token.MEMBER;
+                    state = START;
+                    return tokenReturn(Token::MEMBER, eline, ecol);
                 }
                 break;
             case PLUS:
                 switch (c) {
                 case '+':
-                    Xappend(c);
-                    Xstate = START;
-                    return Token.INCREMENT;
+                    advanceAppend();
+                    state = START;
+                    return tokenReturn(Token::INCREMENT, eline, ecol);
                 case '=':
-                    Xappend(c);
-                    Xstate = START;
-                    return Token.ADD_ASSIGN;
+                    advanceAppend();
+                    state = START;
+                    return tokenReturn(Token::ADD_ASSIGN, eline, ecol);
                 default:
-                    Xunget(c);
-                    Xstate = START;
-                    return Token.PLUS;
+                    state = START;
+                    return tokenReturn(Token::PLUS, eline, ecol);
                 }
             case MINUS:
                 switch (c) {
                 case '-':
-                    Xappend(c);
-                    Xstate = START;
-                    return Token.DECREMENT;
+                    advanceAppend();
+                    state = START;
+                    return tokenReturn(Token::DECREMENT, eline, ecol);
                 case '=':
-                    Xappend(c);
-                    Xstate = START;
-                    return Token.SUBTRACT_ASSIGN;
+                    advanceAppend();
+                    state = START;
+                    return tokenReturn(Token::SUBTRACT_ASSIGN, eline, ecol);
                 default:
-                    Xunget(c);
-                    Xstate = START;
-                    return Token.MINUS;
+                    state = START;
+                    return tokenReturn(Token::MINUS, eline, ecol);
                 }
             case ASTERISK:
-                if (c == '=') {
-                    Xappend(c);
-                    Xstate = START;
-                    return Token.MULTIPLY_ASSIGN;
-                } else {
-                    Xunget(c);
-                    Xstate = START;
-                    return Token.ASTERISK;
+                switch (c) {
+                case '=':
+                    advanceAppend();
+                    state = START;
+                    return tokenReturn(Token::MULTIPLY_ASSIGN, eline, ecol);
+                case '/':
+                    state = START;
+                    return tokenReturn(Token::E_INVALID_CLOSE_COMMENT, eline, ecol);
+                default:
+                    state = START;
+                    return tokenReturn(Token::ASTERISK, eline, ecol);
                 }
             case PERCENT:
                 if (c == '=') {
-                    Xappend(c);
-                    Xstate = START;
-                    return Token.MODULO_ASSIGN;
+                    advanceAppend();
+                    state = START;
+                    return tokenReturn(Token::MODULO_ASSIGN, eline, ecol);
                 } else {
-                    Xunget(c);
-                    Xstate = START;
-                    return Token.MODULO;
+                    state = START;
+                    return tokenReturn(Token::MODULO, eline, ecol);
                 }
             case AMPERSAND:
                 switch (c) {
                 case '&':
-                    Xappend(c);
-                    Xstate = START;
-                    return Token.LOGICAL_AND;
+                    advanceAppend();
+                    state = START;
+                    return tokenReturn(Token::LOGICAL_AND, eline, ecol);
                 case '=':
-                    Xappend(c);
-                    Xstate = START;
-                    return Token.AND_ASSIGN;
+                    advanceAppend();
+                    state = START;
+                    return tokenReturn(Token::AND_ASSIGN, eline, ecol);
                 default:
-                    Xunget(c);
-                    Xstate = START;
-                    return Token.AMPERSAND;
+                    state = START;
+                    return tokenReturn(Token::AMPERSAND, eline, ecol);
                 }
             case PIPE:
                 switch (c) {
                 case '|':
-                    Xappend(c);
-                    Xstate = START;
-                    return Token.LOGICAL_OR;
+                    advanceAppend();
+                    state = START;
+                    return tokenReturn(Token::LOGICAL_OR, eline, ecol);
                 case '=':
-                    Xappend(c);
-                    Xstate = START;
-                    return Token.OR_ASSIGN;
+                    advanceAppend();
+                    state = START;
+                    return tokenReturn(Token::OR_ASSIGN, eline, ecol);
                 default:
-                    Xunget(c);
-                    Xstate = START;
-                    return Token.BITWISE_OR;
+                    state = START;
+                    return tokenReturn(Token::BITWISE_OR, eline, ecol);
                 }
             case CARET:
                 switch (c) {
                 case '^':
-                    Xappend(c);
-                    Xstate = START;
-                    return Token.LOGICAL_XOR;
+                    advanceAppend();
+                    state = START;
+                    return tokenReturn(Token::LOGICAL_XOR, eline, ecol);
                 case '=':
-                    Xappend(c);
-                    Xstate = START;
-                    return Token.XOR_ASSIGN;
+                    advanceAppend();
+                    state = START;
+                    return tokenReturn(Token::XOR_ASSIGN, eline, ecol);
                 default:
-                    Xunget(c);
-                    Xstate = START;
-                    return Token.BITWISE_XOR;
+                    state = START;
+                    return tokenReturn(Token::BITWISE_XOR, eline, ecol);
                 }
             case LT:
                 switch (c) {
                 case '<':
-                    Xappend(c);
-                    Xstate = LT_LT;
+                    advanceAppend();
+                    state = LT_LT;
                     break;
                 case '=':
-                    Xappend(c);
-                    Xstate = START;
-                    return Token.LESS_THAN_EQUALS;
+                    advanceAppend();
+                    state = START;
+                    return tokenReturn(Token::LESS_THAN_EQUALS, eline, ecol);
                 default:
-                    Xunget(c);
-                    Xstate = START;
-                    return Token.LESS_THAN;
+                    state = START;
+                    return tokenReturn(Token::LESS_THAN, eline, ecol);
                 }
                 break;
             case GT:
                 switch (c) {
                 case '>':
-                    Xappend(c);
-                    Xstate = GT_GT;
+                    advanceAppend();
+                    state = GT_GT;
                     break;
                 case '=':
-                    Xappend(c);
-                    Xstate = START;
-                    return Token.GREATER_THAN_EQUALS;
+                    advanceAppend();
+                    state = START;
+                    return tokenReturn(Token::GREATER_THAN_EQUALS, eline, ecol);
                 default:
-                    Xunget(c);
-                    Xstate = START;
-                    return Token.GREATER_THAN;
+                    state = START;
+                    return tokenReturn(Token::GREATER_THAN, eline, ecol);
                 }
                 break;
             case LT_LT:
                 if (c == '=') {
-                    Xappend(c);
-                    Xstate = START;
-                    return Token.LEFT_SHIFT_ASSIGN;
+                    advanceAppend();
+                    state = START;
+                    return tokenReturn(Token::LEFT_SHIFT_ASSIGN, eline, ecol);
                 } else {
-                    Xunget(c);
-                    Xstate = START;
-                    return Token.LEFT_SHIFT;
+                    state = START;
+                    return tokenReturn(Token::LEFT_SHIFT, eline, ecol);
                 }
             case GT_GT:
                 if (c == '=') {
-                    Xappend(c);
-                    Xstate = START;
-                    return Token.RIGHT_SHIFT_ASSIGN;
+                    advanceAppend();
+                    state = START;
+                    return tokenReturn(Token::RIGHT_SHIFT_ASSIGN, eline, ecol);
                 } else {
-                    Xunget(c);
-                    Xstate = START;
-                    return Token.RIGHT_SHIFT;
+                    state = START;
+                    return tokenReturn(Token::RIGHT_SHIFT, eline, ecol);
                 }
             case EXCLAMATION:
                 if (c == '=') {
-                    Xappend(c);
-                    Xstate = START;
-                    return Token.NOT_EQUALS;
+                    advanceAppend();
+                    state = START;
+                    return tokenReturn(Token::NOT_EQUALS, eline, ecol);
                 } else {
-                    Xunget(c);
-                    Xstate = START;
-                    return Token.LOGICAL_NOT;
+                    state = START;
+                    return tokenReturn(Token::LOGICAL_NOT, eline, ecol);
                 }
             case EQUALS:
                 if (c == '=') {
-                    Xappend(c);
-                    Xstate = START;
-                    return Token.EQUALS;
+                    advanceAppend();
+                    state = START;
+                    return tokenReturn(Token::EQUALS, eline, ecol);
                 } else {
-                    Xunget(c);
-                    Xstate = START;
-                    return Token.ASSIGN;
+                    state = START;
+                    return tokenReturn(Token::ASSIGN, eline, ecol);
                 }
+            case CHARACTER:
+                switch (c) {
+                case '\'':
+                    advanceAppend();
+                    state = START;
+                    return tokenReturn(Token::CHARACTER, eline, ecol);
+                case '\\':
+                    advanceAppend();
+                    state = CHARACTER_ESCAPE;
+                    break;
+                case '\n':
+                    state = START;
+                    return tokenReturn(Token::E_CHARACTER_UNTERMINATED, eline, ecol);
+                default: advanceAppend();
+                }
+                break;
+            case CHARACTER_ESCAPE:
+                if (c == '\n') {
+                    state = START;
+                    return tokenReturn(Token::E_CHARACTER_UNTERMINATED, eline, ecol);
+                } else {
+                    advanceAppend();
+                    state = CHARACTER;
+                }
+                break;
             case STRING:
                 switch (c) {
                 case '"':
-                    Xappend(c);
-                    Xstate = START;
-                    return Token.STRING;
-                case '\':
-                    Xappend(c);
-                    Xstate = STRING_ESCAPE;
+                    advanceAppend();
+                    state = START;
+                    return tokenReturn(Token::STRING, eline, ecol);
+                case '\\':
+                    advanceAppend();
+                    state = STRING_ESCAPE;
                     break;
-                default: Xappend(c);
+                case '\n':
+                    state = START;
+                    return tokenReturn(Token::E_STRING_UNTERMINATED, eline, ecol);
+                default: advanceAppend();
                 }
                 break;
             case STRING_ESCAPE:
-                Xappend(c);
-                Xstate = STRING;
+                if (c == '\n') {
+                    state = START;
+                    return tokenReturn(Token::E_STRING_UNTERMINATED, eline, ecol);
+                } else {
+                    advanceAppend();
+                    state = STRING;
+                }
                 break;
             case SLASH:
                 switch (c) {
                 case '=':
-                    Xappend(c);
-                    Xstate = START;
-                    return Token.DIVIDE_ASSIGN;
+                    advanceAppend();
+                    state = START;
+                    return tokenReturn(Token::DIVIDE_ASSIGN, eline, ecol);
                 case '/':
-                    Xdiscard(c);
-                    Xstate = SLASH_SLASH;
+                    advanceDiscard();
+                    state = SLASH_SLASH;
                     break;
                 case '*':
-                    Xdiscard(c);
-                    Xstate = SLASH_STAR;
+                    advanceDiscard();
+                    state = SLASH_STAR;
                     break;
                 default:
-                    Xunget(c);
-                    Xstate = START;
-                    return Token.DIVIDE;
+                    state = START;
+                    return tokenReturn(Token::DIVIDE, eline, ecol);
                 }
             case SLASH_SLASH:
                 if (c == '\n') {
-                    Xclear();
+                    clearBuffer();
                     Xnewline();
-                    Xstate = START;
+                    state = START;
                 }
-                Xdiscard(c);
+                advanceDiscard();
                 break;
             case SLASH_STAR:
                 if (c == '*') {
-                    Xstate = SLASH_STAR_STAR;
+                    state = SLASH_STAR_STAR;
                 }
-                Xdiscard(c);
+                advanceDiscard();
                 break;
             case SLASH_STAR_STAR:
                 switch (c) {
                 case '/':
-                    Xclear();
-                    Xstate = START;
+                    clearBuffer();
+                    state = START;
                     break;
                 case '*': break;
-                default: Xstate = SLASH_STAR;
+                default: state = SLASH_STAR;
                 }
-                Xdiscard(c);
+                advanceDiscard();
                 break;
-        } while (/**/);
+        }
+        switch (state) {
+        case START: return END_OF_FILE;
+        case IDENTIFIER: return tokenReturn(Token::IDENTIFIER, eline, ecol);
+        case LEADING_ZERO:
+        case DECIMAL_NUMBER:
+            return tokenReturn(Token::DECIMAL, eline, ecol);
+        case BINARY_NUMBER: return tokenReturn(Token::BINARY, eline, ecol);
+        case OCTAL_NUMBER: return tokenReturn(Token::OCTAL, eline, ecol);
+        case HEX_NUMBER: return tokenReturn(Token::HEXADECIMAL, eline, ecol);
+        case FLOATING_POINT: return tokenReturn(Token::FLOATING_POINT, eline, ecol);
+        case FLOATING_EXPONENT: return tokenReturn(Token::E_FLOATING_MISSING_EXPONENT, eline, ecol);
+        case FLOATING_EXPONENT_SIGN: return tokenReturn(Token::FLOATING_POINT, eline, ecol);
+        case CHARACTER:
+        case CHARACTER_ESCAPE:
+            return tokenReturn(Token::E_CHARACTER_UNTERMINATED, eline, ecol);
+        case STRING:
+        case STRING_ESCAPE:
+            return tokenReturn(Token::E_STRING_UNTERMINATED, eline, ecol);
+        case COLON: return tokenReturn(Token::COLON, eline, ecol);
+        case PERIOD: return tokenReturn(Token::MEMBER, eline, ecol);
+        case PLUS: return tokenReturn(Token::PLUS, eline, ecol);
+        case MINUS: return tokenReturn(Token::MINUS, eline, ecol);
+        case ASTERISK: return tokenReturn(Token::ASTERISK, eline, ecol);
+        case PERCENT: return tokenReturn(Token::MODULO, eline, ecol);
+        case AMPERSAND: return tokenReturn(Token::AMPERSAND, eline, ecol);
+        case PIPE: return tokenReturn(Token::BITWISE_OR, eline, ecol);
+        case CARET: return tokenReturn(Token::BITWISE_XOR, eline, ecol);
+        case LT: return tokenReturn(Token::LESS_THAN, eline, ecol);
+        case GT: return tokenReturn(Token::GREATER_THAN, eline, ecol);
+        case LT_LT: return tokenReturn(Token::LEFT_SHIFT, eline, ecol);
+        case GT_GT: return tokenReturn(Token::RIGHT_SHIFT, eline, ecol);
+        case EXCLAMATION: return tokenReturn(Token::LOGICAL_NOT, eline, ecol);
+        case EQUALS: return tokenReturn(Token::ASSIGN, eline, ecol);
+        case SLASH: return tokenReturn(Token::DIVIDE, eline, ecol);
+        case SLASH_SLASH:
+            clearBuffer();
+            return tokenReturn(Token::END_OF_FILE, eline, ecol);
+        case SLASH_STAR:
+        case SLASH_STAR_STAR:
+            return tokenReturn(Token::E_COMMENT_UNTERMINATED, eline, ecol);
+        }
+        return tokenReturn(Token::END_OF_FILE, eline, ecol);
+    }
+
+    Scanner::Scanner() : state(START), input_eof(true) {
+/*TODO*/
     }
 }
 

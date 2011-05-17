@@ -2,8 +2,8 @@
  * See /doc/license.txt for details on how this source can be licensed for use.   */
 
 #pragma once
-#ifndef SCANNER_H
-#define SCANNER_H
+#ifndef ETERNITY_PARSER_SCANNER_H
+#define ETERNITY_PARSER_SCANNER_H
 
 #include "token.hpp"
 
@@ -21,6 +21,8 @@ namespace Eternity {
             FLOATING_POINT,
             FLOATING_EXPONENT,
             FLOATING_EXPONENT_SIGN,
+            CHARACTER,
+            CHARACTER_ESCAPE,
             STRING,
             STRING_ESCAPE,
             COLON,
@@ -43,8 +45,23 @@ namespace Eternity {
             SLASH_STAR,
             SLASH_STAR_STAR,
         };
+
+        bool input_eof;
+        char c;
+        int line, col;
+        State state;
+
+        void advanceAppend();
+        void advanceDiscard();
+        void clearBuffer();
+        Token::Type tokenReturn(Token::Type, int&, int&);
+
+    public:
+        Scanner();
+
+        Token::Type getToken(int&, int&, int&, int&);
     };
 }
 
-#endif /*SCANNER_H*/
+#endif /*ETERNITY_PARSER_SCANNER_H*/
 
