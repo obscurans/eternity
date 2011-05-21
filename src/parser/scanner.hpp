@@ -6,6 +6,10 @@
 #define ETERNITY_PARSER_SCANNER_H
 
 #include "token.hpp"
+#include <string>
+#include <istream>
+using std::string
+using std::istream
 
 namespace Eternity {
     class Scanner {
@@ -44,18 +48,19 @@ namespace Eternity {
             SLASH_SLASH,
             SLASH_STAR,
             SLASH_STAR_STAR,
+            WHITESPACE
         };
 
         bool input_eof;
         char c;
         int line, col;
         State state;
+        string buffer;
+        istream input;
 
         void advanceAppend();
-        void advanceDiscard();
-        void clearBuffer();
+        void handleNewline();
         Token::Type tokenReturn(Token::Type, int&, int&);
-
     public:
         Scanner();
 

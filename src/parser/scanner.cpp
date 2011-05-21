@@ -6,6 +6,21 @@
 
 namespace Eternity {
 /* Scanner class methods */
+    void Scanner::advanceAppend() {
+        buffer.push_back(c);
+        input.get(c);
+        /* 'EOF' misnomer: waits for no character read; badbit/failbit gets exception thrown */
+        if (input.gcount() == 0) {
+            input_eof = true;
+        }
+        col++;
+    }
+
+    inline void Scanner::handleNewline() {
+        line++;
+        col = 0;
+    }
+
     inline Token::Type Scanner::tokenReturn(Token::Type retval, int& eline, int& ecol) {
         eline = line;
         ecol = col;
@@ -15,7 +30,7 @@ namespace Eternity {
     Token::Type Scanner::getToken(int& sline, int& scol, int& eline, int& ecol) {
         sline = line;
         scol = col;
-        clearBuffer();
+        buffer.clear();
         while (!input_eof) {
             switch (state) {
             case START:
@@ -132,10 +147,13 @@ namespace Eternity {
                     state = SLASH;
                     break;
                 case '\n':
-                    advanceDiscard();
-                    Xnewline();
+                    advanceAppend();
+                    handleNewline();
+                    state = WHITESPACE;
                     break;
-                default: advanceDiscard();
+                default:
+                    advanceAppend();
+                    state = WHITESPACE;
                 }
                 break;
             case IDENTIFIER:
@@ -194,7 +212,7 @@ namespace Eternity {
                 case 'q': case 'r': case 's': case 't': case 'u': case 'v':
                 case 'w': case 'x': case 'y': case 'z':
                     state = START;
-                    return tokenReturn(Token::E_DECIMAL_CONCAT_ALPHA, eline, ecol);
+                    return tokenReturn(Token::E_DECIMAL_INVALID, eline, ecol);
                 case '.':
                     advanceAppend();
                     state = FLOATING_POINT;
@@ -210,20 +228,17 @@ namespace Eternity {
                     advanceAppend();
                     break;
                 case '2': case '3': case '4': case '5': case '6': case '7':
-                case '8': case '9':
+                case '8': case '9': case 'A': case 'B': case 'C': case 'D':
+                case 'E': case 'F': case 'G': case 'H': case 'I': case 'J':
+                case 'K': case 'L': case 'M': case 'N': case 'O': case 'P':
+                case 'Q': case 'R': case 'S': case 'T': case 'U': case 'V':
+                case 'W': case 'X': case 'Y': case 'Z': case 'a': case 'b':
+                case 'c': case 'd': case 'e': case 'f': case 'g': case 'h':
+                case 'i': case 'j': case 'k': case 'l': case 'm': case 'n':
+                case 'o': case 'p': case 'q': case 'r': case 's': case 't':
+                case 'u': case 'v': case 'w': case 'x': case 'y': case 'z':
                     state = START;
                     return tokenReturn(Token::E_BINARY_INVALID_DIGIT, eline, ecol);
-                case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
-                case 'G': case 'H': case 'I': case 'J': case 'K': case 'L':
-                case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R':
-                case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
-                case 'Y': case 'Z': case 'a': case 'b': case 'c': case 'd':
-                case 'e': case 'f': case 'g': case 'h': case 'i': case 'j':
-                case 'k': case 'l': case 'm': case 'n': case 'o': case 'p':
-                case 'q': case 'r': case 's': case 't': case 'u': case 'v':
-                case 'w': case 'x': case 'y': case 'z':
-                    state = START;
-                    return tokenReturn(Token::E_BINARY_CONCAT_ALPHA, eline, ecol);
                 default:
                     state = START;
                     return tokenReturn(Token::BINARY, eline, ecol);
@@ -235,20 +250,17 @@ namespace Eternity {
                 case '6': case '7': case '_':
                     advanceAppend();
                     break;
-                case '8': case '9':
+                case '8': case '9': case 'A': case 'B': case 'C': case 'D':
+                case 'E': case 'F': case 'G': case 'H': case 'I': case 'J':
+                case 'K': case 'L': case 'M': case 'N': case 'O': case 'P':
+                case 'Q': case 'R': case 'S': case 'T': case 'U': case 'V':
+                case 'W': case 'X': case 'Y': case 'Z': case 'a': case 'b':
+                case 'c': case 'd': case 'e': case 'f': case 'g': case 'h':
+                case 'i': case 'j': case 'k': case 'l': case 'm': case 'n':
+                case 'o': case 'p': case 'q': case 'r': case 's': case 't':
+                case 'u': case 'v': case 'w': case 'x': case 'y': case 'z':
                     state = START;
-                    return tokenReturn(Token::E_OCTAL_INVALID_DIGIT, eline, ecol);
-                case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
-                case 'G': case 'H': case 'I': case 'J': case 'K': case 'L':
-                case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R':
-                case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
-                case 'Y': case 'Z': case 'a': case 'b': case 'c': case 'd':
-                case 'e': case 'f': case 'g': case 'h': case 'i': case 'j':
-                case 'k': case 'l': case 'm': case 'n': case 'o': case 'p':
-                case 'q': case 'r': case 's': case 't': case 'u': case 'v':
-                case 'w': case 'x': case 'y': case 'z':
-                    state = START;
-                    return tokenReturn(Token::E_OCTAL_CONCAT_ALPHA, eline, ecol);
+                    return tokenReturn(Token::E_OCTAL_INVALID, eline, ecol);
                 default:
                     state = START;
                     return tokenReturn(Token::OCTAL, eline, ecol);
@@ -270,7 +282,7 @@ namespace Eternity {
                 case 'o': case 'p': case 'q': case 'r': case 's': case 't':
                 case 'u': case 'v': case 'w': case 'x': case 'y': case 'z':
                     state = START;
-                    return tokenReturn(Token::E_HEXADECIMAL_CONCAT_ALPHA, eline, ecol);
+                    return tokenReturn(Token::E_HEXADECIMAL_INVALID, eline, ecol);
                 default:
                     state = START;
                     return tokenReturn(Token::HEXADECIMAL, eline, ecol);
@@ -554,76 +566,137 @@ namespace Eternity {
                 }
             case SLASH_SLASH:
                 if (c == '\n') {
-                    clearBuffer();
-                    Xnewline();
+                    advanceAppend();
+                    handleNewline();
                     state = START;
+                    return tokenReturn(Token::COMMENT, eline, ecol);
                 }
-                advanceDiscard();
+                advanceAppend();
                 break;
             case SLASH_STAR:
                 if (c == '*') {
                     state = SLASH_STAR_STAR;
                 }
-                advanceDiscard();
+                advanceAppend();
                 break;
             case SLASH_STAR_STAR:
                 switch (c) {
                 case '/':
-                    clearBuffer();
+                    advanceAppend();
                     state = START;
+                    return tokenReturn(Token::COMMENT, eline, ecol);
                     break;
                 case '*': break;
                 default: state = SLASH_STAR;
                 }
-                advanceDiscard();
+                advanceAppend();
                 break;
+            case WHITESPACE:
+                switch (c) {
+                case '0': case '1': case '2': case '3': case '4': case '5':
+                case '6': case '7': case '8': case '9': case 'A': case 'B':
+                case 'C': case 'D': case 'E': case 'F': case 'G': case 'H':
+                case 'I': case 'J': case 'K': case 'L': case 'M': case 'N':
+                case 'O': case 'P': case 'Q': case 'R': case 'S': case 'T':
+                case 'U': case 'V': case 'W': case 'X': case 'Y': case 'Z':
+                case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
+                case 'g': case 'h': case 'i': case 'j': case 'k': case 'l':
+                case 'm': case 'n': case 'o': case 'p': case 'q': case 'r':
+                case 's': case 't': case 'u': case 'v': case 'w': case 'x':
+                case 'y': case 'z': case '_': case ';': case '{': case '}':
+                case '(': case ')': case '[': case ']': case '~': case '?':
+                case '\'': case '"': case ':': case '.': case '+': case '-':
+                case '*': case '%': case '&': case '|': case '^': case '<':
+                case '>': case '!': case '=': case '/':
+                    state = START;
+                    return tokenReturn(Token::WHITESPACE, eline, ecol);
+                case '\n':
+                    advanceAppend();
+                    handleNewline();
+                    break;
+                default:
+                    advanceAppend();
+                }
+                break;
+            default:
+                advanceAppend();
         }
         switch (state) {
-        case START: return END_OF_FILE;
-        case IDENTIFIER: return tokenReturn(Token::IDENTIFIER, eline, ecol);
+        case START:
+            return tokenReturn(Token::END_OF_FILE, eline, ecol);
+        case IDENTIFIER:
+            return tokenReturn(Token::IDENTIFIER, eline, ecol);
         case LEADING_ZERO:
         case DECIMAL_NUMBER:
             return tokenReturn(Token::DECIMAL, eline, ecol);
-        case BINARY_NUMBER: return tokenReturn(Token::BINARY, eline, ecol);
-        case OCTAL_NUMBER: return tokenReturn(Token::OCTAL, eline, ecol);
-        case HEX_NUMBER: return tokenReturn(Token::HEXADECIMAL, eline, ecol);
-        case FLOATING_POINT: return tokenReturn(Token::FLOATING_POINT, eline, ecol);
-        case FLOATING_EXPONENT: return tokenReturn(Token::E_FLOATING_MISSING_EXPONENT, eline, ecol);
-        case FLOATING_EXPONENT_SIGN: return tokenReturn(Token::FLOATING_POINT, eline, ecol);
+        case BINARY_NUMBER:
+            return tokenReturn(Token::BINARY, eline, ecol);
+        case OCTAL_NUMBER:
+            return tokenReturn(Token::OCTAL, eline, ecol);
+        case HEX_NUMBER:
+            return tokenReturn(Token::HEXADECIMAL, eline, ecol);
+        case FLOATING_POINT:
+            return tokenReturn(Token::FLOATING_POINT, eline, ecol);
+        case FLOATING_EXPONENT:
+            return tokenReturn(Token::E_FLOATING_MISSING_EXPONENT, eline, ecol);
+        case FLOATING_EXPONENT_SIGN:
+            return tokenReturn(Token::FLOATING_POINT, eline, ecol);
         case CHARACTER:
         case CHARACTER_ESCAPE:
             return tokenReturn(Token::E_CHARACTER_UNTERMINATED, eline, ecol);
         case STRING:
         case STRING_ESCAPE:
             return tokenReturn(Token::E_STRING_UNTERMINATED, eline, ecol);
-        case COLON: return tokenReturn(Token::COLON, eline, ecol);
-        case PERIOD: return tokenReturn(Token::MEMBER, eline, ecol);
-        case PLUS: return tokenReturn(Token::PLUS, eline, ecol);
-        case MINUS: return tokenReturn(Token::MINUS, eline, ecol);
-        case ASTERISK: return tokenReturn(Token::ASTERISK, eline, ecol);
-        case PERCENT: return tokenReturn(Token::MODULO, eline, ecol);
-        case AMPERSAND: return tokenReturn(Token::AMPERSAND, eline, ecol);
-        case PIPE: return tokenReturn(Token::BITWISE_OR, eline, ecol);
-        case CARET: return tokenReturn(Token::BITWISE_XOR, eline, ecol);
-        case LT: return tokenReturn(Token::LESS_THAN, eline, ecol);
-        case GT: return tokenReturn(Token::GREATER_THAN, eline, ecol);
-        case LT_LT: return tokenReturn(Token::LEFT_SHIFT, eline, ecol);
-        case GT_GT: return tokenReturn(Token::RIGHT_SHIFT, eline, ecol);
-        case EXCLAMATION: return tokenReturn(Token::LOGICAL_NOT, eline, ecol);
-        case EQUALS: return tokenReturn(Token::ASSIGN, eline, ecol);
-        case SLASH: return tokenReturn(Token::DIVIDE, eline, ecol);
+        case COLON:
+            return tokenReturn(Token::COLON, eline, ecol);
+        case PERIOD:
+            return tokenReturn(Token::MEMBER, eline, ecol);
+        case PLUS:
+            return tokenReturn(Token::PLUS, eline, ecol);
+        case MINUS:
+            return tokenReturn(Token::MINUS, eline, ecol);
+        case ASTERISK:
+            return tokenReturn(Token::ASTERISK, eline, ecol);
+        case PERCENT:
+            return tokenReturn(Token::MODULO, eline, ecol);
+        case AMPERSAND:
+            return tokenReturn(Token::AMPERSAND, eline, ecol);
+        case PIPE:
+            return tokenReturn(Token::BITWISE_OR, eline, ecol);
+        case CARET:
+            return tokenReturn(Token::BITWISE_XOR, eline, ecol);
+        case LT:
+            return tokenReturn(Token::LESS_THAN, eline, ecol);
+        case GT:
+            return tokenReturn(Token::GREATER_THAN, eline, ecol);
+        case LT_LT:
+            return tokenReturn(Token::LEFT_SHIFT, eline, ecol);
+        case GT_GT:
+            return tokenReturn(Token::RIGHT_SHIFT, eline, ecol);
+        case EXCLAMATION:
+            return tokenReturn(Token::LOGICAL_NOT, eline, ecol);
+        case EQUALS:
+            return tokenReturn(Token::ASSIGN, eline, ecol);
+        case SLASH:
+            return tokenReturn(Token::DIVIDE, eline, ecol);
         case SLASH_SLASH:
-            clearBuffer();
-            return tokenReturn(Token::END_OF_FILE, eline, ecol);
+            return tokenReturn(Token::END_OF_FILE_COMMENT, eline, ecol);
         case SLASH_STAR:
         case SLASH_STAR_STAR:
             return tokenReturn(Token::E_COMMENT_UNTERMINATED, eline, ecol);
+        case WHITESPACE:
+        default:
+            return tokenReturn(Token::END_OF_FILE, eline, ecol);
         }
-        return tokenReturn(Token::END_OF_FILE, eline, ecol);
     }
 
-    Scanner::Scanner() : state(START), input_eof(true) {
+    Scanner::Scanner():
+            input_eof(true),
+            line(0),
+            col(0),
+            state(START) {
 /*TODO*/
+        input.exceptions(ifstream::failbit | ifstream::badbit);
     }
 }
 
